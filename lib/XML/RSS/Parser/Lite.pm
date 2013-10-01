@@ -190,6 +190,8 @@ sub get {
 }
 
 
+1;
+
 __END__
 
 
@@ -212,13 +214,16 @@ XML::RSS::Parser::Lite - A simple pure perl RSS parser.
 	for (my $i = 0; $i < $rp->count(); $i++) {
 		my $it = $rp->get($i);
 		print $it->get('title') . " " . $it->get('url') . " " . $it->get('description') . "\n";
+		# some RSSv2.0 optional parameters may have been set:
+		if (defined $it->get('pubDate') { print "publication date found: " . $it->get('pubDate')."\n"; }
 	}
 
 
 =head1 DESCRIPTION
 
-XML::RSS::Parser::Lite is a simple pure perl RSS parser. It uses XML::Parser::Lite for its parsing.
+XML::RSS::Parser::Lite is a simple pure perl RSS parser. It uses XML::Parser::Lite as backend.
 
+For the fields available via C<get>, please refer to the documentation: L<http://www.rss-specifications.com/rss-specifications.htm>, for RSS v2.0: L<http://cyber.law.harvard.edu/rss/rss.html>.
 
 =head1 METHODS
 
@@ -244,23 +249,20 @@ Returns the number of items in the RSS file.
 Integers sent to get returns and XML::RSS::Parser::Lite::Item while the strings title, url, and description returns these
 values from the RSS channel information.
 
-
 =item $value = $item->get($what);
 
 On an XML::RSS::Parser::Lite::Item this can return the strings title, url, or description.
+All RSS v2.0 values are accessible, provided they are present in the feed: L<http://cyber.law.harvard.edu/rss/rss.html>
 
 =back
 
+=head1 LICENSE
 
-=head1 AUTHOR
-
-Copyright (c) 2003 Erik Bosrup. All rights reserved.
+Copyright (c) 2003-2013 Erik Bosrup. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
-
 =head1 AUTHOR
 
-Erik Bosrup, erik@bosrup.com
+Erik Bosrup, erik@bosrup.com ; Thomas Blanchard, thomasfp.blanchard@gmail.com
 
-1;
