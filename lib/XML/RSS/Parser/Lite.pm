@@ -2,7 +2,7 @@ package XML::RSS::Parser::Lite::Item;
 
 use strict;
 
-our $VERSION = '0.10';
+our $VERSION = '0.12';
 
 sub new {
 	my $class = shift;
@@ -11,6 +11,13 @@ sub new {
 		'title', '',
 		'url', '',
 		'description', '',
+		'pubDate', '',
+		'author', '',
+		'category', '',
+		'comments', '',
+		'enclosure', '',
+		'guid', '',
+		'source', '',
 		@_,
 	};
 	
@@ -41,13 +48,14 @@ package XML::RSS::Parser::Lite;
 use strict;
 use XML::Parser::Lite;
 
-our $VERSION = '0.10';
+our $VERSION = '0.12';
 
 sub new { 
 	my $class = shift;
 
 	my $parser = new XML::Parser::Lite;
 	my $self = {
+		# mandatory
 		parser		=> $parser,
 		place		=> '',
 		title		=> '',
@@ -55,6 +63,24 @@ sub new {
 		description	=> '',
 		items		=> [],
 		latest		=> new XML::RSS::Parser::Lite::Item,
+		# optionals
+		pubDate		=> '',
+		language	=> '',
+		copyright	=> '',
+		managingEditor	=> '',
+		webMaster	=> '',
+		pubDate	=> '',
+		lastBuildDate	=> '',
+		category	=> '',
+		generator	=> '',
+		docs	=> '',
+		cloud	=> '',
+		ttl	=> '',
+		image	=> '',
+		rating	=> '',
+		textInput	=> '',
+		skipHours	=> '',
+		skipDays	=> '',
 	};
 
 	$self->{parser}->setHandlers(
@@ -88,19 +114,36 @@ sub start {
 	
 	$self->{place} .= "/$tag";
 	$self->{latest} = $self->add if ($self->{place} eq '/rss/channel/item');
+	$self->{latest} = $self->add if ($self->{place} eq '/rdf:RDF/item');
 }
 
 sub char {
 	my $self = shift;
 	my $text = shift;
-	
+
+	# set item
 	$self->{latest}->set('title', $text) if ($self->{place} eq '/rss/channel/item/title');
 	$self->{latest}->set('url', $text) if ($self->{place} eq '/rss/channel/item/link');
 	$self->{latest}->set('description', $text) if ($self->{place} eq '/rss/channel/item/description');
+	# optional fields
+	$self->{latest}->set('pubDate', $text) if ($self->{place} eq '/rss/channel/item/pubDate');
+	$self->{latest}->set('author', $text) if ($self->{place} eq '/rss/channel/item/author');
+	$self->{latest}->set('category', $text) if ($self->{place} eq '/rss/channel/item/category');
+	$self->{latest}->set('comments', $text) if ($self->{place} eq '/rss/channel/item/comments');
+	$self->{latest}->set('enclosure', $text) if ($self->{place} eq '/rss/channel/item/enclosure');
+	$self->{latest}->set('guid', $text) if ($self->{place} eq '/rss/channel/item/guid');
+	$self->{latest}->set('source', $text) if ($self->{place} eq '/rss/channel/item/source');
+
+# compatibility with RSS1.0
+	$self->{latest}->set('title', $text) if ($self->{place} eq '/rdf:RDF/item/title');
+	$self->{latest}->set('url', $text) if ($self->{place} eq '/rdf:RDF/item/link');
+	$self->{latest}->set('description', $text) if ($self->{place} eq '/rdf:RDF/item/description');
 	
+	# set channel
 	$self->{title} = $text if ($self->{place} eq '/rss/channel/title');
 	$self->{url} = $text if ($self->{place} eq '/rss/channel/link');
 	$self->{description} = $text if ($self->{place} eq '/rss/channel/description');
+	$self->{pubDate} = $text if ($self->{place} eq '/rss/channel/pubDate');
 }
 
 sub end { 
@@ -109,7 +152,12 @@ sub end {
 	
 	my $place = $self->{place};
 	$place = substr($place, 0, length($place)-length($tag)-1); # regex here causes segmentation fault!
+
+# compatibility with RSS1.0
 	$self->{place} = $place;
+	$self->{title} = $tag if ($self->{place} eq '/rdf:RDF/channel/title');
+	$self->{url} = $tag if ($self->{place} eq '/rdf:RDF/channel/link');
+	$self->{description} = $tag if ($self->{place} eq '/rdf:RDF/channel/description');
 }
 
 
